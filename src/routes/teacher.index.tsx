@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { LiveLine } from "@/components/live-line";
 import { PackStatus } from "@/components/pack-status";
+import { InstallApp } from "@/components/install-app";
 import { useAppStore } from "@/lib/app-store";
 import { STAGES, stageById } from "@/lib/bible/stages";
 import { mergeBank } from "@/lib/bible/pack";
@@ -169,6 +170,7 @@ function TeacherDesk() {
       </section>
 
       <aside className="space-y-6">
+        <InstallApp compact />
         <section className="rounded-xl border border-border bg-bg-elevated p-5">
           <div className="flex items-center gap-2">
             <BookMarked className="size-4 text-muted" />

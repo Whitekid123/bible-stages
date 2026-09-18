@@ -42,6 +42,7 @@
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    height: 100%;
   }
 
   body {
@@ -52,6 +53,9 @@
     color: var(--color-fg);
     font-family: var(--font-sans);
     line-height: 1.5;
+    min-height: 100dvh;
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
   }
 
   h1,
@@ -89,6 +93,55 @@
     background:
       radial-gradient(120% 80% at 50% -10%, rgb(243 239 228 / 0.12), transparent 55%),
       var(--color-accent);
+  }
+
+  .app-status {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .app-with-tabs {
+    padding-bottom: calc(4.75rem + env(safe-area-inset-bottom));
+  }
+
+  @media (min-width: 1024px) {
+    .app-with-tabs {
+      padding-bottom: 0;
+    }
+  }
+
+  .app-tabbar {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 40;
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 2px;
+    border-top: 1px solid rgb(243 239 228 / 0.12);
+    background: var(--color-accent);
+    padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+  }
+
+  .app-tabbar:has(.app-tab:nth-child(3):last-child) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .app-tab {
+    display: flex;
+    min-height: 44px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    border-radius: 8px;
+    color: rgb(243 239 228 / 0.62);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
+  .app-tab.is-active {
+    background: rgb(243 239 228 / 0.14);
+    color: var(--color-accent-fg);
   }
 
   .flip-scene {

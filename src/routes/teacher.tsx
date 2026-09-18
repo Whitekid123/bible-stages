@@ -8,6 +8,12 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/teacher")({ component: TeacherLayout });
 
+const LINKS = [
+  { to: "/teacher", label: "Scripts", icon: ClipboardList, exact: true },
+  { to: "/teacher/bank", label: "Bank", icon: BookMarked, exact: false },
+  { to: "/teacher/results", label: "Results", icon: BarChart3, exact: false },
+] as const;
+
 function TeacherLayout() {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -23,15 +29,9 @@ function TeacherLayout() {
 
   if (session?.role !== "teacher") return null;
 
-  const links = [
-    { to: "/teacher", label: "Scripts", icon: ClipboardList, exact: true },
-    { to: "/teacher/bank", label: "Question bank", icon: BookMarked, exact: false },
-    { to: "/teacher/results", label: "Results", icon: BarChart3, exact: false },
-  ] as const;
-
   return (
-    <div className="min-h-dvh">
-      <header className="nave-panel print:hidden text-accent-fg">
+    <div className="app-with-tabs min-h-dvh">
+      <header className="nave-panel app-status print:hidden text-accent-fg">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3">
           <div className="flex items-center gap-3">
             <Mark className="size-8" />
@@ -40,8 +40,8 @@ function TeacherLayout() {
               <p className="text-sm text-accent-fg/70">Bank, scripts, class login</p>
             </div>
           </div>
-          <nav className="flex flex-wrap items-center gap-1">
-            {links.map((link) => {
+          <nav className="hidden items-center gap-1 lg:flex">
+            {LINKS.map((link) => {
               const active = link.exact ? pathname === link.to : pathname.startsWith(link.to);
               const Icon = link.icon;
               return (
@@ -70,9 +70,30 @@ function TeacherLayout() {
               Leave
             </Button>
           </nav>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-accent-fg hover:bg-accent-fg/10 hover:text-accent-fg lg:hidden"
+            onClick={logout}
+          >
+            <LogOut className="size-4" />
+            Leave
+          </Button>
         </div>
       </header>
       <Outlet />
+      <nav className="app-tabbar print-hidden lg:hidden">
+        {LINKS.map((link) => {
+          const Icon = link.icon;
+          const active = link.exact ? pathname === link.to : pathname.startsWith(link.to);
+          return (
+            <Link key={link.to} to={link.to} className={cn("app-tab", active && "is-active")}>
+              <Icon className="size-5" />
+              {link.label}
+            </Link>
+          );
+        })}
+      </nav>
     </div>
   );
 }

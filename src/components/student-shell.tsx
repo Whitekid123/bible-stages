@@ -18,7 +18,7 @@ const LINKS = [
   { to: "/hall", label: "Hall", icon: LayoutGrid },
   { to: "/cards", label: "Cards", icon: Layers },
   { to: "/verse", label: "Verse", icon: BookOpen },
-  { to: "/notebook", label: "Notebook", icon: NotebookPen },
+  { to: "/notebook", label: "Notes", icon: NotebookPen },
   { to: "/progress", label: "Progress", icon: ClipboardCheck },
   { to: "/board", label: "Board", icon: Trophy },
 ] as const;
@@ -36,8 +36,8 @@ export function StudentShell({
   const name = session?.role === "student" ? session.name : "Student";
 
   return (
-    <div className="min-h-dvh">
-      <header className="nave-panel print-hidden text-accent-fg">
+    <div className="app-with-tabs min-h-dvh">
+      <header className="nave-panel app-status print-hidden text-accent-fg">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-3">
           <Link to="/hall" className="flex items-center gap-3">
             <Mark className="size-8" />
@@ -46,13 +46,10 @@ export function StudentShell({
               <p className="text-sm text-accent-fg/70">{name}</p>
             </div>
           </Link>
-          <nav className="-mx-1 flex max-w-full items-center gap-1 overflow-x-auto pb-1">
+          <nav className="hidden items-center gap-1 lg:flex">
             {LINKS.map((link) => {
               const Icon = link.icon;
-              const active =
-                link.to === "/hall"
-                  ? pathname === "/hall"
-                  : pathname === link.to || pathname.startsWith(`${link.to}/`);
+              const active = isActive(pathname, link.to);
               return (
                 <Link
                   key={link.to}
@@ -79,9 +76,39 @@ export function StudentShell({
               Leave
             </Button>
           </nav>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-accent-fg hover:bg-accent-fg/10 hover:text-accent-fg lg:hidden"
+            onClick={logout}
+          >
+            <LogOut className="size-4" />
+            Leave
+          </Button>
         </div>
       </header>
       <div className={cn("mx-auto px-5 py-8", wide ? "max-w-6xl" : "max-w-3xl")}>{children}</div>
+      <nav className="app-tabbar print-hidden lg:hidden">
+        {LINKS.map((link) => {
+          const Icon = link.icon;
+          const active = isActive(pathname, link.to);
+          return (
+            <Link
+              key={link.to}
+              to={link.to}
+              className={cn("app-tab", active && "is-active")}
+            >
+              <Icon className="size-5" />
+              {link.label}
+            </Link>
+          );
+        })}
+      </nav>
     </div>
   );
+}
+
+function isActive(pathname: string, to: string) {
+  if (to === "/hall") return pathname === "/hall";
+  return pathname === to || pathname.startsWith(`${to}/`);
 }

@@ -8,6 +8,7 @@ import { PackStatus } from "@/components/pack-status";
 import { StudentShell } from "@/components/student-shell";
 import { StageSeal } from "@/components/stage-seal";
 import { VerseRibbon } from "@/components/verse-ribbon";
+import { InstallApp } from "@/components/install-app";
 import { useStudentGate } from "@/components/student-gate";
 import { useAppStore } from "@/lib/app-store";
 import { STAGES, examMinutes, examQuestionCount } from "@/lib/bible/stages";
@@ -77,6 +78,10 @@ function HallPage() {
 
       <div className="mt-4">
         <PackStatus />
+      </div>
+
+      <div className="mt-4">
+        <InstallApp compact />
       </div>
 
       {hallMeta.notice ? (

@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Mark } from "@/components/mark";
 import { LiveLine } from "@/components/live-line";
 import { NaveMotif } from "@/components/nave-motif";
+import { InstallApp } from "@/components/install-app";
 import { useAppStore } from "@/lib/app-store";
 import { STAGES } from "@/lib/bible/stages";
 import { verseOfTheDay } from "@/lib/bible/verses";
@@ -46,13 +47,13 @@ function LoginPage() {
 
   return (
     <main className="min-h-dvh lg:grid lg:grid-cols-2">
-      <section className="nave-panel relative overflow-hidden px-6 py-10 text-accent-fg sm:px-10 lg:flex lg:flex-col lg:justify-between lg:py-14">
+      <section className="nave-panel app-status relative overflow-hidden px-6 py-10 text-accent-fg sm:px-10 lg:flex lg:flex-col lg:justify-between lg:py-14">
         <NaveMotif className="pointer-events-none absolute -right-8 top-8 w-48 opacity-80 lg:w-72" />
         <div className="relative max-w-lg">
           <div className="flex items-center gap-3">
             <Mark />
             <p className="text-sm font-medium tracking-[0.18em] uppercase text-accent-fg/70">
-              Classroom scripture
+              Classroom app
             </p>
           </div>
           <h1 className="mt-8 font-display text-[clamp(3rem,8vw,5.5rem)] leading-[0.92] tracking-tight">
@@ -61,7 +62,7 @@ function LoginPage() {
             Stages
           </h1>
           <p className="mt-6 max-w-md text-lg text-accent-fg/80">
-            Five papers. One hall. Lecturers add questions; every student downloads the pack on
+            Install it on the phone. Lecturers add questions; every student downloads the pack on
             entry — even if they sit later.
           </p>
         </div>
@@ -85,83 +86,86 @@ function LoginPage() {
       </section>
 
       <section className="flex items-center px-6 py-10 sm:px-10">
-        <div className="mx-auto w-full max-w-md rounded-xl bg-bg-elevated p-6 shadow-lift sm:p-8">
-          <div className="mb-6 flex rounded-lg bg-bg-subtle p-1">
-            <button
-              type="button"
-              onClick={() => {
-                setMode("student");
-                setError(null);
-              }}
-              className={`flex h-11 flex-1 items-center justify-center gap-2 rounded-md text-sm font-medium transition-colors duration-150 ${
-                mode === "student" ? "bg-bg-elevated text-fg shadow-soft" : "text-muted"
-              }`}
-            >
-              <BookOpen className="size-4" />
-              Student
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setMode("teacher");
-                setError(null);
-              }}
-              className={`flex h-11 flex-1 items-center justify-center gap-2 rounded-md text-sm font-medium transition-colors duration-150 ${
-                mode === "teacher" ? "bg-bg-elevated text-fg shadow-soft" : "text-muted"
-              }`}
-            >
-              <KeyRound className="size-4" />
-              Teacher
-            </button>
-          </div>
+        <div className="mx-auto w-full max-w-md space-y-5">
+          <div className="rounded-xl bg-bg-elevated p-6 shadow-lift sm:p-8">
+            <div className="mb-6 flex rounded-lg bg-bg-subtle p-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setMode("student");
+                  setError(null);
+                }}
+                className={`flex h-11 flex-1 items-center justify-center gap-2 rounded-md text-sm font-medium transition-colors duration-150 ${
+                  mode === "student" ? "bg-bg-elevated text-fg shadow-soft" : "text-muted"
+                }`}
+              >
+                <BookOpen className="size-4" />
+                Student
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setMode("teacher");
+                  setError(null);
+                }}
+                className={`flex h-11 flex-1 items-center justify-center gap-2 rounded-md text-sm font-medium transition-colors duration-150 ${
+                  mode === "teacher" ? "bg-bg-elevated text-fg shadow-soft" : "text-muted"
+                }`}
+              >
+                <KeyRound className="size-4" />
+                Teacher
+              </button>
+            </div>
 
-          <form onSubmit={onSubmit} className="space-y-4">
-            {mode === "student" ? (
+            <form onSubmit={onSubmit} className="space-y-4">
+              {mode === "student" ? (
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full name</Label>
+                  <Input
+                    id="name"
+                    autoComplete="name"
+                    placeholder="As it should appear on the paper"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
+                </div>
+              ) : null}
               <div className="space-y-2">
-                <Label htmlFor="name">Full name</Label>
+                <Label htmlFor="password">
+                  {mode === "student" ? "Class password" : "Teacher password"}
+                </Label>
                 <Input
-                  id="name"
-                  autoComplete="name"
-                  placeholder="As it should appear on the paper"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  id="password"
+                  type="password"
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
-            ) : null}
-            <div className="space-y-2">
-              <Label htmlFor="password">
-                {mode === "student" ? "Class password" : "Teacher password"}
-              </Label>
-              <Input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-            {error ? <p className="text-sm text-danger">{error}</p> : null}
-            <Button type="submit" className="w-full" size="lg" disabled={busy}>
-              {busy
-                ? mode === "student"
-                  ? "Packing questions onto this device…"
-                  : "Opening the desk…"
-                : mode === "student"
-                  ? "Enter the hall"
-                  : "Open the desk"}
-            </Button>
-            <LiveLine />
-          </form>
+              {error ? <p className="text-sm text-danger">{error}</p> : null}
+              <Button type="submit" className="w-full" size="lg" disabled={busy}>
+                {busy
+                  ? mode === "student"
+                    ? "Packing questions onto this device…"
+                    : "Opening the desk…"
+                  : mode === "student"
+                    ? "Enter the hall"
+                    : "Open the desk"}
+              </Button>
+              <LiveLine />
+            </form>
 
-          <div className="mt-6 rounded-lg border border-border bg-bg px-4 py-3 text-sm text-muted">
-            <p className="font-medium text-fg">Preview login</p>
-            <p className="mt-1">
-              Class password <span className="font-medium text-fg">class</span>
-              {" · "}
-              Teacher password <span className="font-medium text-fg">teacher</span>
-            </p>
-            <p className="mt-1">Change these later at the teacher desk.</p>
+            <div className="mt-6 rounded-lg border border-border bg-bg px-4 py-3 text-sm text-muted">
+              <p className="font-medium text-fg">Preview login</p>
+              <p className="mt-1">
+                Class password <span className="font-medium text-fg">class</span>
+                {" · "}
+                Teacher password <span className="font-medium text-fg">teacher</span>
+              </p>
+              <p className="mt-1">Change these later at the teacher desk.</p>
+            </div>
           </div>
+          <InstallApp />
         </div>
       </section>
     </main>

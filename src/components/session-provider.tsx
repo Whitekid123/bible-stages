@@ -1,5 +1,6 @@
 import { useEffect, type ReactNode } from "react";
 import { useAppStore } from "@/lib/app-store";
+import { registerServiceWorker } from "@/lib/pwa";
 
 export function SessionProvider({ children }: { children: ReactNode }) {
   const setHydrated = useAppStore((s) => s.setHydrated);
@@ -7,6 +8,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const resumeHall = useAppStore((s) => s.resumeHall);
   const pending = useAppStore((s) => Boolean(s.draft?.pendingSubmit && !s.draft.submittedAt));
   const touchStreak = useAppStore((s) => s.touchStreak);
+
+  useEffect(() => {
+    registerServiceWorker();
+  }, []);
 
   useEffect(() => {
     if (useAppStore.persist.hasHydrated()) {

@@ -1,8 +1,8 @@
 # Bible Stages
 
-A classroom Bible exam hall for Sunday school and church classes.
+A **phone app** for Sunday school and church Bible exams — not a website you browse in a tab.
 
-Lecturers write and upload their own questions. Students download the full pack as soon as they enter — even if they sit later. Papers start and submit online so the teacher can mark them from another device. Answering still works if the connection drops.
+Students install it on the home screen. Lecturers write questions in the teacher desk. The question pack downloads onto each phone at login, even if they sit later. Papers start and submit so the teacher can mark from another device.
 
 ## What it includes
 
@@ -12,7 +12,7 @@ Lecturers write and upload their own questions. Students download the full pack 
 - Timed sittings with tab-leave integrity
 - Teacher desk: papers, keys, results, hall notice, sitting lock
 - Revision, flashcards, verse trainer, honour board, certificates
-- Offline-friendly answering with queued hand-in
+- Works offline for answering; start and hand-in need a connection
 
 ## Preview login (change these)
 
@@ -25,69 +25,71 @@ Change both at the teacher desk after the first login.
 
 ---
 
-## Host it live (recommended)
+## This is an app. Hosting is only how phones get it.
 
-You need two free accounts: **GitHub** (already connected) and **Vercel**, plus a **Neon** Postgres database so every phone shares the same hall.
+Phones cannot install a Play Store package from this chat. They install **Bible Stages** the same way as many church apps: open the class link once, then **Add to Home Screen**. After that it opens full-screen with its own icon — no browser bar.
+
+You still publish one live address so every student installs the **same** hall.
 
 ### 1. Database
 
-1. Open [neon.tech](https://neon.tech) and create a project (region close to your class).
-2. Copy the connection string. It looks like `postgresql://…@….neon.tech/neondb?sslmode=require`.
+1. Open [neon.tech](https://neon.tech) and create a project.
+2. Copy the connection string (`postgresql://…`).
 
-### 2. Deploy on Vercel
+### 2. Put the app online
 
-1. Open [vercel.com/new](https://vercel.com/new) and import this repository.
-2. Framework preset can stay on **Other** / Vite. Build command: `npm run build`.
-3. Add environment variables:
+1. Open [vercel.com/new](https://vercel.com/new) and import `Whitekid123/bible-stages`.
+2. Add environment variables:
 
 | Name | Value |
 | --- | --- |
 | `DATABASE_URL` | your Neon connection string |
 | `VITE_AUTH_ENABLED` | `false` |
 
-4. Deploy. Vercel will install, build, and run the hall migrations automatically.
-5. Open the live URL. Teacher password `teacher` → desk → **change passwords**.
+3. Deploy. That live URL is the **class app link**.
 
-Share the live URL with the class. Students enter their full name + class password. The question pack downloads onto their phone at login.
+### 3. Install on each phone
 
-### 3. After deploy
+**Android (Chrome)**
+1. Open the class link
+2. Menu (⋮) → **Install app** / Add to Home screen
+3. Open the new **Bible Stages** icon
 
-- Add your own questions in **Question bank**
-- Switch bank mode to **Mix** or **Yours** if you do not want only the built-in set
-- Post a hall notice if the sitting is today
-- Turn **sittings** on when you are ready, off when the paper is closed
-- Use **Release marks** when you want students to see scores
+**iPhone (Safari)**
+1. Open the class link in Safari
+2. Share → **Add to Home Screen**
+3. Open the new **Bible Stages** icon
+
+The login screen also shows these steps. Once installed, questions stay on that phone.
+
+### 4. Before class
+
+- Teacher password `teacher` → desk → **change passwords**
+- Add questions in **Question bank**
+- Switch bank mode to Mix or Yours if needed
+- Share the class link (or tell students to use the home-screen icon)
 
 ---
 
-## Run on your own computer
+## Try it on a computer
 
-You need [Node.js 22](https://nodejs.org/) (or newer).
+You need [Node.js 22](https://nodejs.org/).
 
 ```bash
 npm install
 npm run dev
 ```
 
-Then open the address the terminal prints (it serves on port 8080). Without `DATABASE_URL` the app uses a local database on that machine — fine for trying it, not for a real class on many phones.
-
-For a real class on your own server, set `DATABASE_URL` to a shared Postgres database, set `VITE_AUTH_ENABLED=false`, then:
-
-```bash
-npm install
-npm run build
-```
-
-Host the Vercel build output, or keep using Vercel / another Node host that understands the Nitro `vercel` preset in `vite.config.ts`.
+That is for trying the app. A real class on many phones needs the hosted app link above.
 
 ---
 
 ## Passwords and data
 
-- Class and teacher passwords are hashed in the database. Default hashes are seeded so the preview login works on first boot.
-- Student names and scripts are stored in the hall database. Do not put private pastoral notes in teacher comments if the hall is on a shared demo database.
-- Change the default passwords before you give the link to students.
+- Class and teacher passwords are hashed in the database.
+- Change the default passwords before students install.
+- Student names and scripts live in the hall database.
 
 ## Stack
 
-React 19, TanStack Start, Tailwind v4, Postgres (Neon in production, embedded PGLite when no `DATABASE_URL`).
+React 19, TanStack Start, Tailwind v4, Postgres (Neon when hosted). Installable as a standalone app (manifest + service worker).
