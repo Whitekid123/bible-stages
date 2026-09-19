@@ -20,8 +20,8 @@ export function LiveLine({ invert = false }: { invert?: boolean }) {
     >
       <span className={cn("size-1.5 rounded-full", online ? "bg-ok" : "bg-danger")} />
       {online
-        ? "Hall is live — start and hand-in reach the teacher."
-        : "No connection. Answers stay here until the hall is back."}
+        ? "Hall is live — every phone is on the same exam."
+        : "No connection. Turn on internet so the teacher can see this paper."}
     </p>
   );
 }

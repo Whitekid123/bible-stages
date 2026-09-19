@@ -1,77 +1,60 @@
 # Bible Stages
 
-**Android app:** after GitHub finishes the build, download `BibleStages.apk` from [Releases](https://github.com/Whitekid123/bible-stages/releases). Install that file on the phone. It is the app.
+A **phone exam app** for Sunday school. Students sit on their own phones. The teacher watches the class live — who is writing, who left the app, who handed in.
 
----
+## How a real sitting works
 
-A **phone app** for Sunday school and church Bible exams — not a website you browse in a tab.
+1. Every student has the **Bible Stages** app on their own phone.
+2. **Internet is on** (data or WiFi). That is how the class is connected.
+3. Students enter their **full name** and the class password.
+4. They tap **Begin** → **Start the exam**.
+5. On the teacher phone, the **Live class** board shows each student.
+6. If a student leaves the app or switches away, the teacher sees **Left the app**.
+7. When they hand in, the script is on the teacher desk.
 
-Students install it on the home screen. Lecturers write questions in the teacher desk. The question pack downloads onto each phone at login, even if they sit later. Papers start and submit so the teacher can mark from another device.
-
-## What it includes
-
-- Five stages: **I General**, **II Little ones**, **III Growing**, **IV Juniors**, **V Youth**
-- Lecturer question bank (write, edit, CSV upload, Mix / Yours / Core)
-- Auto pack download on login
-- Timed sittings with tab-leave integrity
-- Teacher desk: papers, keys, results, hall notice, sitting lock
-- Revision, flashcards, verse trainer, honour board, certificates
-- Works offline for answering; start and hand-in need a connection
-
-## Preview login (change these)
-
-| Role | Password |
+| Role | Password (change these) |
 | --- | --- |
 | Student / class | `class` |
 | Teacher / lecturer | `teacher` |
 
-Change both at the teacher desk after the first login.
+---
+
+## What you need to do (once)
+
+The phones must share **one class hall** on the internet. You already started this with Vercel. Do not use Neon.
+
+### 1. Give the class a database (inside Vercel)
+
+1. Open [vercel.com](https://vercel.com) and open the **bible-stages** project.
+2. Click **Storage**.
+3. Click **Create Database** → **Postgres**.
+4. Confirm. Vercel adds `DATABASE_URL` by itself.
+5. Open **Deployments** → ⋮ on the latest → **Redeploy**.
+
+When that finishes, you get a live class link (looks like `https://….vercel.app`).
+
+### 2. Put the app on every phone
+
+**Android**
+- Install the **Bible Stages** APK I give you, **or** open the class link in Chrome → menu ⋮ → **Add to Home screen**.
+
+**iPhone**
+- Open the class link in **Safari** → Share → **Add to Home Screen**.
+
+### 3. On exam day
+
+1. Teacher: open the app → **Teacher** → password `teacher`.
+2. Watch **Live class**. Students appear as they enter.
+3. Students: open the same app → full name → password `class` → **Enter the hall** → **Begin**.
+4. Keep internet on until they hand in.
+
+Change the passwords at the teacher desk before a real exam.
 
 ---
 
-## This is an app. Hosting is only how phones get it.
+## Lecturer questions
 
-Phones cannot install a Play Store package from this chat. They install **Bible Stages** the same way as many church apps: open the class link once, then **Add to Home Screen**. After that it opens full-screen with its own icon — no browser bar.
-
-You still publish one live address so every student installs the **same** hall.
-
-### 1. Database
-
-1. Open [neon.tech](https://neon.tech) and create a project.
-2. Copy the connection string (`postgresql://…`).
-
-### 2. Put the app online
-
-1. Open [vercel.com/new](https://vercel.com/new) and import `Whitekid123/bible-stages`.
-2. Add environment variables:
-
-| Name | Value |
-| --- | --- |
-| `DATABASE_URL` | your Neon connection string |
-| `VITE_AUTH_ENABLED` | `false` |
-
-3. Deploy. That live URL is the **class app link**.
-
-### 3. Install on each phone
-
-**Android (Chrome)**
-1. Open the class link
-2. Menu (⋮) → **Install app** / Add to Home screen
-3. Open the new **Bible Stages** icon
-
-**iPhone (Safari)**
-1. Open the class link in Safari
-2. Share → **Add to Home Screen**
-3. Open the new **Bible Stages** icon
-
-The login screen also shows these steps. Once installed, questions stay on that phone.
-
-### 4. Before class
-
-- Teacher password `teacher` → desk → **change passwords**
-- Add questions in **Question bank**
-- Switch bank mode to Mix or Yours if needed
-- Share the class link (or tell students to use the home-screen icon)
+Teacher desk → **Bank**. Write questions or upload CSV. Students download the pack when they enter, even if they sit later.
 
 ---
 
@@ -83,17 +66,3 @@ You need [Node.js 22](https://nodejs.org/).
 npm install
 npm run dev
 ```
-
-That is for trying the app. A real class on many phones needs the hosted app link above.
-
----
-
-## Passwords and data
-
-- Class and teacher passwords are hashed in the database.
-- Change the default passwords before students install.
-- Student names and scripts live in the hall database.
-
-## Stack
-
-React 19, TanStack Start, Tailwind v4, Postgres (Neon when hosted). Installable as a standalone app (manifest + service worker).

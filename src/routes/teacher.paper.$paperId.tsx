@@ -39,7 +39,7 @@ function PaperPage() {
 
   const stage = stageById(paper.stageId);
   const score = scorePaper(paper, customQuestions);
-  const integrity = integrityLabel(paper.tabLeaves);
+  const integrity = integrityLabel(paper.tabLeaves, paper.appLeaves);
   const questions = paper.questionIds
     .map((id) => resolveQuestion(id, paper, customQuestions))
     .filter((q): q is Question => Boolean(q));

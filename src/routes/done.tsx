@@ -26,7 +26,7 @@ function DonePage() {
     s.draft?.id === paperId ? s.draft : s.papers.find((p) => p.id === paperId) ?? s.myPapers.find((p) => p.id === paperId),
   );
   const stage = paper ? stageById(paper.stageId) : undefined;
-  const integrity = paper ? integrityLabel(paper.tabLeaves) : null;
+  const integrity = paper ? integrityLabel(paper.tabLeaves, paper.appLeaves) : null;
   const score =
     hallMeta.releaseMarks && paper
       ? paper.scoreCache ?? (paper.questions?.some((q) => q.answer) ? scorePaper(paper) : null)

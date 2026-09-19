@@ -23,7 +23,6 @@ function ExamPage() {
   const sending = useAppStore((s) => s.sending);
   const startPaper = useAppStore((s) => s.startPaper);
   const saveAnswer = useAppStore((s) => s.saveAnswer);
-  const recordTabLeave = useAppStore((s) => s.recordTabLeave);
   const flushProgress = useAppStore((s) => s.flushProgress);
   const submitPaper = useAppStore((s) => s.submitPaper);
   const [index, setIndex] = useState(0);
@@ -61,9 +60,9 @@ function ExamPage() {
     if (!paper || paper.submittedAt || paper.pendingSubmit) return;
     const onVis = () => {
       if (document.visibilityState === "hidden") {
-        recordTabLeave(paper.id);
         setAway(true);
-        void flushProgress(paper.id);
+      } else {
+        setAway(false);
       }
     };
     document.addEventListener("visibilitychange", onVis);
@@ -72,7 +71,7 @@ function ExamPage() {
       document.removeEventListener("visibilitychange", onVis);
       window.clearInterval(tick);
     };
-  }, [paper, recordTabLeave, flushProgress]);
+  }, [paper, flushProgress]);
 
   if (!session || session.role !== "student" || !stage) return null;
 
@@ -113,7 +112,7 @@ function ExamPage() {
             <Clock className="mt-0.5 size-4 shrink-0 text-muted" />
             {sitting.objective} objective and {sitting.blank} fill-in blanks · {minutes} minutes
           </li>
-          <li>Starting needs a connection. That opens your script on the teacher’s desk.</li>
+          <li>Leaving this app or switching away is recorded on the teacher’s desk.</li>
           <li>Questions were packed onto this device when you entered. Answers save to the hall when connected.</li>
           <li>Handing in needs a connection. If the line drops, we keep trying until the teacher has it.</li>
         </ul>
@@ -383,7 +382,8 @@ function ExamSitting({
             <AlertTriangle className="mx-auto size-8 text-warn" />
             <h2 className="mt-3 font-display text-2xl">Return to your paper</h2>
             <p className="mt-2 text-sm text-muted">
-              Leaving this tab is recorded on your script. Stay on the exam until you hand it in.
+              Leaving the app is recorded on the teacher’s desk. Stay on this paper until you
+              hand it in.
             </p>
             <Button className="mt-5 w-full" onClick={() => setAway(false)}>
               I am back

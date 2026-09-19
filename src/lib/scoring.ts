@@ -46,10 +46,17 @@ export function scorePaper(paper: Paper, custom: Question[] = []) {
   };
 }
 
-export function integrityLabel(tabLeaves: number) {
-  if (tabLeaves <= 0) return { label: "Clean sitting", tone: "ok" as const };
-  if (tabLeaves <= 2) return { label: `${tabLeaves} tab leave${tabLeaves === 1 ? "" : "s"}`, tone: "warn" as const };
-  return { label: `Integrity flag · ${tabLeaves} leaves`, tone: "danger" as const };
+export function integrityLabel(tabLeaves: number, appLeaves = 0) {
+  const n = tabLeaves + appLeaves;
+  if (n <= 0) return { label: "Clean sitting", tone: "ok" as const };
+  if (appLeaves > 0 && tabLeaves === 0) {
+    return {
+      label: `Left the app ${appLeaves} time${appLeaves === 1 ? "" : "s"}`,
+      tone: appLeaves > 2 ? ("danger" as const) : ("warn" as const),
+    };
+  }
+  if (n <= 2) return { label: `${n} leave${n === 1 ? "" : "s"}`, tone: "warn" as const };
+  return { label: `Integrity flag · ${n} leaves`, tone: "danger" as const };
 }
 
 export function scoreBand(percent: number) {

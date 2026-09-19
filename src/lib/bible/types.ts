@@ -62,6 +62,9 @@ export type Paper = {
   questionIds: string[];
   answers: Record<string, string>;
   tabLeaves: number;
+  appLeaves?: number;
+  hidden?: boolean;
+  lastSeen?: string;
   startedAt: string;
   submittedAt: string | null;
   timeUp: boolean;
@@ -73,6 +76,19 @@ export type Paper = {
   scoreCache?: ScoreSummary;
   /** Local only: hand-in is queued until the hall confirms receipt. */
   pendingSubmit?: boolean;
+};
+
+export type SeatWatch = {
+  name: string;
+  role: "student" | "teacher";
+  paperId: string | null;
+  stageId: StageId | null;
+  inExam: boolean;
+  hidden: boolean;
+  appLeaves: number;
+  tabLeaves: number;
+  answersSaved: number;
+  lastSeen: string;
 };
 
 export type Session =

@@ -10,6 +10,9 @@ export type ScriptRow = {
   question_ids: string;
   answers: string;
   tab_leaves: number;
+  app_leaves?: number | string | null;
+  last_seen?: string | null;
+  hidden?: number | string | null;
   started_at: string;
   submitted_at: string | null;
   time_up: number;
@@ -43,6 +46,19 @@ export type QuestionRow = {
   published: number;
   created_at: string;
   updated_at: string;
+};
+
+export type PresenceRow = {
+  seat_label: string;
+  role: string;
+  paper_id: string | null;
+  stage_id: string | null;
+  in_exam: number | string;
+  hidden: number | string;
+  app_leaves: number | string;
+  tab_leaves: number | string;
+  answers_saved: number | string;
+  last_seen: string;
 };
 
 export function hashPassword(password: string) {
@@ -118,6 +134,9 @@ export function toPaper(row: ScriptRow, opts?: { reveal?: boolean; custom?: Ques
     questionIds: parseJson<string[]>(row.question_ids, []),
     answers: parseJson<Record<string, string>>(row.answers, {}),
     tabLeaves: Number(row.tab_leaves) || 0,
+    appLeaves: Number(row.app_leaves) || 0,
+    hidden: Number(row.hidden) === 1,
+    lastSeen: row.last_seen || undefined,
     startedAt: row.started_at,
     submittedAt: row.submitted_at,
     timeUp: Number(row.time_up) === 1,

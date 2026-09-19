@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { durationFor, selectQuestions } from "@/lib/bible/select";
-import type { Paper, Question, StageId } from "@/lib/bible/types";
+import type { Paper, Question, SeatWatch, StageId } from "@/lib/bible/types";
 import { scorePaper } from "@/lib/scoring";
 import {
   bumpPack,
@@ -16,6 +16,7 @@ import {
   stripQuestion,
   toMeta,
   toPaper,
+  type PresenceRow,
   type ScriptRow,
 } from "@/lib/hall-auth";
 
@@ -52,6 +53,87 @@ export const pingHall = createServerFn({ method: "POST" }).handler(async () => {
   await ensureHall();
   return { ok: true as const };
 });
+
+function toSeat(row: PresenceRow): SeatWatch {
+  return {
+    name: row.seat_label,
+    role: row.role === "teacher" ? "teacher" : "student",
+    paperId: row.paper_id,
+    stageId: (row.stage_id as StageId | null) ?? null,
+    inExam: Number(row.in_exam) === 1,
+    hidden: Number(row.hidden) === 1,
+    appLeaves: Number(row.app_leaves) || 0,
+    tabLeaves: Number(row.tab_leaves) || 0,
+    answersSaved: Number(row.answers_saved) || 0,
+    lastSeen: row.last_seen,
+  };
+}
+
+export const beatHall = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      password: z.string().min(1),
+      candidate: z.string().trim().min(2).max(80),
+      paperId: z.string().optional(),
+      stageId: STAGE.optional(),
+      hidden: z.boolean(),
+      inExam: z.boolean(),
+      tabLeaves: z.number().int().min(0).optional(),
+      answersSaved: z.number().int().min(0).optional(),
+      appLeave: z.boolean().optional(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const sql = await ensureHall();
+    const row = await settings(sql);
+    if (!row || !hashesMatch(data.password, row.class_password_hash)) {
+      return fail("That class password is not right.");
+    }
+    const now = new Date().toISOString();
+    const appInc = data.appLeave ? 1 : 0;
+    await sql`
+      insert into hall_presence (
+        seat_label, role, paper_id, stage_id, in_exam, hidden, app_leaves, tab_leaves, answers_saved, last_seen
+      ) values (
+        ${data.candidate}, ${"student"}, ${data.paperId ?? null}, ${data.stageId ?? null},
+        ${data.inExam ? 1 : 0}, ${data.hidden ? 1 : 0}, ${appInc}, ${data.tabLeaves ?? 0},
+        ${data.answersSaved ?? 0}, ${now}
+      )
+      on conflict (seat_label) do update set
+        paper_id = excluded.paper_id,
+        stage_id = excluded.stage_id,
+        in_exam = excluded.in_exam,
+        hidden = excluded.hidden,
+        app_leaves = hall_presence.app_leaves + ${appInc},
+        tab_leaves = excluded.tab_leaves,
+        answers_saved = excluded.answers_saved,
+        last_seen = excluded.last_seen
+    `;
+    if (data.paperId) {
+      await sql`
+        update scripts
+        set last_seen = ${now},
+            hidden = ${data.hidden ? 1 : 0},
+            tab_leaves = ${data.tabLeaves ?? 0},
+            app_leaves = app_leaves + ${appInc}
+        where id = ${data.paperId} and submitted_at is null
+      `;
+    }
+    return { ok: true as const };
+  });
+
+export const leaveHall = createServerFn({ method: "POST" })
+  .validator(z.object({ password: z.string().min(1), candidate: z.string().trim().min(2).max(80) }))
+  .handler(async ({ data }) => {
+    const sql = await ensureHall();
+    const row = await settings(sql);
+    if (!row || !hashesMatch(data.password, row.class_password_hash)) {
+      return fail("That class password is not right.");
+    }
+    await sql`delete from hall_presence where seat_label = ${data.candidate}`;
+    return { ok: true as const };
+  });
+
 
 export const verifyClassPassword = createServerFn({ method: "POST" })
   .validator(z.object({ password: z.string().min(1) }))
@@ -230,9 +312,16 @@ export const listScripts = createServerFn({ method: "POST" })
     const rows = await sql<ScriptRow>`
       select * from scripts where class_id = ${"hall"} order by started_at desc
     `;
+    let seats: PresenceRow[] = [];
+    try {
+      seats = await sql<PresenceRow>`select * from hall_presence order by last_seen desc`;
+    } catch {
+      seats = [];
+    }
     return {
       ok: true as const,
       papers: rows.map((r) => hydrateMissingQuestions(toPaper(r, { reveal: true, custom }), custom)),
+      presence: seats.map(toSeat),
       examSize: parseSize(row.exam_size),
       meta: toMeta(row),
     };

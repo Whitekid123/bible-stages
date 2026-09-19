@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { LiveLine } from "@/components/live-line";
+import { LiveClass } from "@/components/live-class";
 import { PackStatus } from "@/components/pack-status";
 import { InstallApp } from "@/components/install-app";
 import { useAppStore } from "@/lib/app-store";
@@ -39,7 +40,7 @@ function TeacherDesk() {
 
   useEffect(() => {
     void refreshPapers();
-    const t = window.setInterval(() => void refreshPapers(), 8000);
+    const t = window.setInterval(() => void refreshPapers(), 3000);
     return () => window.clearInterval(t);
   }, [refreshPapers]);
 
@@ -59,8 +60,8 @@ function TeacherDesk() {
           <div>
             <h1 className="font-display text-4xl tracking-tight">Scripts</h1>
             <p className="mt-2 text-muted">
-              Papers arrive here when a student starts and when they hand in — from this device
-              or another. In-progress answers refresh as they save.
+            Papers arrive here when a student starts and when they hand in — from their own
+            phone, over the internet. If they leave the app, it flags here.
             </p>
           </div>
           <Button
@@ -93,7 +94,8 @@ function TeacherDesk() {
             </p>
           </div>
         </div>
-        <div className="mt-3 space-y-2">
+        <div className="mt-3 space-y-3">
+          <LiveClass />
           <LiveLine />
           <PackStatus compact />
         </div>
@@ -119,6 +121,7 @@ function TeacherDesk() {
                         <p className="text-sm text-muted">
                           Stage {stage?.roman} · {stage?.name} · {savedCount}/
                           {paper.questionIds.length} answers saved to the hall
+                          {paper.hidden ? " · left the app" : ""}
                         </p>
                       </Link>
                     </li>
@@ -139,7 +142,7 @@ function TeacherDesk() {
               {handedIn.map((paper) => {
                 const stage = stageById(paper.stageId);
                 const score = scorePaper(paper, customQuestions);
-                const integrity = integrityLabel(paper.tabLeaves);
+                const integrity = integrityLabel(paper.tabLeaves, paper.appLeaves);
                 return (
                   <li key={paper.id}>
                     <Link

@@ -3,12 +3,14 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import { DEFAULT_META } from "@/lib/bible/pack";
 import {
   getScript,
+  leaveHall,
   listHonourBoard,
   listMyScripts,
   listScripts,
   markScript,
   noteScript,
   pingHall,
+  beatHall,
   saveScriptProgress,
   startScript,
   submitScript,
@@ -46,6 +48,7 @@ import type {
   Question,
   QuestionPack,
   RevisionCard,
+  SeatWatch,
   Session,
   StageId,
   StudentDesk,
@@ -78,6 +81,7 @@ type AppState = {
   customQuestions: Question[];
   desk: StudentDesk;
   honour: { open: boolean; rows: HonourRow[] } | null;
+  presence: SeatWatch[];
   setHydrated: () => void;
   ping: () => Promise<boolean>;
   resumeHall: () => Promise<void>;
@@ -90,6 +94,8 @@ type AppState = {
   startPaper: (stageId: StageId) => Promise<{ paper?: Paper; error?: string }>;
   saveAnswer: (paperId: string, questionId: string, value: string) => void;
   recordTabLeave: (paperId: string) => void;
+  recordAppLeave: () => void;
+  beat: (hidden: boolean, appLeave?: boolean) => Promise<void>;
   flushProgress: (paperId: string) => Promise<void>;
   submitPaper: (paperId: string, timeUp?: boolean) => Promise<string | null>;
   setTeacherNotes: (paperId: string, notes: string) => void;
@@ -186,6 +192,7 @@ export const useAppStore = create<AppState>()(
       customQuestions: [],
       desk: EMPTY_DESK,
       honour: null,
+      presence: [],
       setHydrated: () => set({ hydrated: true }),
       ping: async () => {
         const res = await guarded(() => pingHall());
@@ -221,6 +228,7 @@ export const useAppStore = create<AppState>()(
         });
         await get().syncPack();
         await get().refreshMyPapers();
+        await get().beat(false);
         return null;
       },
       loginTeacher: async (password) => {
@@ -240,13 +248,18 @@ export const useAppStore = create<AppState>()(
         if (listed.ok) {
           set({
             papers: listed.papers,
+            presence: listed.presence ?? [],
             examSize: listed.examSize,
             hallMeta: listed.meta ?? get().hallMeta,
           });
         }
         return null;
       },
-      logout: () =>
+      logout: () => {
+        const session = get().session;
+        if (session?.role === "student") {
+          void leaveHall({ data: { password: session.password, candidate: session.name } });
+        }
         set({
           session: null,
           draft: null,
@@ -255,7 +268,9 @@ export const useAppStore = create<AppState>()(
           pack: null,
           customQuestions: [],
           honour: null,
-        }),
+          presence: [],
+        });
+      },
       syncPack: async () => {
         const session = get().session;
         if (!session) return "Sign in first.";
@@ -292,6 +307,7 @@ export const useAppStore = create<AppState>()(
         }
         set({
           papers: res.papers,
+          presence: res.presence ?? [],
           examSize: res.examSize,
           hallMeta: res.meta ?? get().hallMeta,
           online: true,
@@ -330,6 +346,7 @@ export const useAppStore = create<AppState>()(
           return { error: res.error };
         }
         set({ draft: res.paper, papers: upsertPaper(get().papers, res.paper), online: true });
+        await get().beat(false);
         return { paper: res.paper };
       },
       saveAnswer: (paperId, questionId, value) => {
@@ -350,6 +367,56 @@ export const useAppStore = create<AppState>()(
           draft: get().draft ? patch(get().draft!) : get().draft,
           papers: get().papers.map(patch),
         });
+      },
+      recordAppLeave: () => {
+        const paper = get().draft;
+        if (!paper || paper.submittedAt || paper.pendingSubmit) {
+          void get().beat(true, true);
+          return;
+        }
+        const now = Date.now();
+        const last = Number((paper as Paper & { _leaveAt?: number })._leaveAt ?? 0);
+        if (now - last < 1500) {
+          void get().beat(true, true);
+          return;
+        }
+        const patch = (p: Paper) =>
+          p.id === paper.id
+            ? { ...p, appLeaves: (p.appLeaves ?? 0) + 1, hidden: true, lastSeen: new Date().toISOString() }
+            : p;
+        set({
+          draft: get().draft ? patch(get().draft!) : get().draft,
+          papers: get().papers.map(patch),
+        });
+        void get().beat(true, true);
+      },
+      beat: async (hidden, appLeave = false) => {
+        const session = get().session;
+        if (session?.role !== "student") return;
+        const paper = get().draft && !get().draft?.submittedAt ? get().draft : null;
+        const answersSaved = paper
+          ? Object.values(paper.answers).filter((v) => v?.trim()).length
+          : 0;
+        const res = await guarded(() =>
+          beatHall({
+            data: {
+              password: session.password,
+              candidate: session.name,
+              paperId: paper?.id,
+              stageId: paper?.stageId,
+              hidden,
+              inExam: Boolean(paper),
+              tabLeaves: paper?.tabLeaves ?? 0,
+              answersSaved,
+              appLeave,
+            },
+          }),
+        );
+        if (!res.ok) {
+          set(markOnline(res.error));
+          return;
+        }
+        set({ online: true });
       },
       flushProgress: async (paperId) => {
         const session = get().session;

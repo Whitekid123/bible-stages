@@ -70,7 +70,7 @@ function ResultsPage() {
   }, [scored]);
 
   function exportCsv() {
-    const header = "name,stage,submitted,correct,total,percent,tab_leaves,time_up";
+    const header = "name,stage,submitted,correct,total,percent,tab_leaves,app_leaves,time_up";
     const lines = scored.map(({ paper, score }) =>
       [
         csv(paper.studentName),
@@ -80,6 +80,7 @@ function ResultsPage() {
         score.total,
         score.percent,
         paper.tabLeaves,
+        paper.appLeaves ?? 0,
         paper.timeUp ? "yes" : "no",
       ].join(","),
     );
@@ -175,7 +176,7 @@ function ResultsPage() {
               .map(({ paper, score }) => {
                 const stage = stageById(paper.stageId);
                 const band = scoreBand(score.percent);
-                const integrity = integrityLabel(paper.tabLeaves);
+                const integrity = integrityLabel(paper.tabLeaves, paper.appLeaves);
                 return (
                   <li key={paper.id}>
                     <Link
