@@ -35,11 +35,16 @@ When that finishes, you get a live class link (looks like `https://….vercel.ap
 
 ### 2. Put the app on every phone
 
-**Android**
-- Install the **Bible Stages** APK I give you, **or** open the class link in Chrome → menu ⋮ → **Add to Home screen**.
+Share **one** of these. People tap it **on the Android phone**.
 
-**iPhone**
-- Open the class link in **Safari** → Share → **Add to Home Screen**.
+- Direct file: `https://YOUR-VERCEL-SITE.vercel.app/BibleStages.apk`
+- Download page: `https://YOUR-VERCEL-SITE.vercel.app/download`
+
+Until Vercel is Ready, use this file (same app):
+
+https://github.com/Whitekid123/bible-stages/releases/latest/download/BibleStages.apk
+
+Then: Downloads → BibleStages.apk → Install.
 
 ### 3. On exam day
 

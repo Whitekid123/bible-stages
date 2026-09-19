@@ -33,10 +33,12 @@ import {
   dropNotebook,
   EMPTY_DESK,
   markVerseKnown,
+  parishOf,
   pinBookmark,
   pushPractice,
   unpinBookmark,
   upsertNotebook,
+  withParish,
 } from "@/lib/bible/desk";
 import type {
   BankMode,
@@ -155,6 +157,7 @@ type AppState = {
   }) => void;
   bumpCard: (kind: "known" | "learning") => void;
   rememberVerse: (verseId: string) => void;
+  patchParish: (mut: (p: import("@/lib/parish/content").ParishDesk) => import("@/lib/parish/content").ParishDesk) => void;
   fetchCards: (stageId: StageId, count?: number) => Promise<{ error?: string; cards?: RevisionCard[] }>;
   fetchHonour: () => Promise<string | null>;
 };
@@ -746,6 +749,10 @@ export const useAppStore = create<AppState>()(
           },
         }),
       rememberVerse: (verseId) => set({ desk: markVerseKnown(get().desk, verseId) }),
+      patchParish: (mut) =>
+        set({
+          desk: withParish(get().desk, mut(parishOf(get().desk))),
+        }),
       fetchCards: async (stageId, count = 12) => {
         const session = get().session;
         if (session?.role !== "student") return { error: "Enter as a student first." };
@@ -790,7 +797,11 @@ export const useAppStore = create<AppState>()(
         return {
           ...current,
           ...saved,
-          desk: { ...EMPTY_DESK, ...saved.desk },
+          desk: {
+            ...EMPTY_DESK,
+            ...saved.desk,
+            parish: { ...EMPTY_DESK.parish!, ...saved.desk?.parish },
+          },
         };
       },
     },

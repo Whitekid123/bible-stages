@@ -1,5 +1,6 @@
 import type { Bookmark, NotebookItem, PracticeLog, StudentDesk } from "./types";
 import { todayKey } from "./verses";
+import { EMPTY_PARISH, type ParishDesk } from "@/lib/parish/content";
 
 export const EMPTY_DESK: StudentDesk = {
   bookmarks: [],
@@ -10,7 +11,16 @@ export const EMPTY_DESK: StudentDesk = {
   knownVerses: [],
   lastVisitDate: null,
   streak: 0,
+  parish: { ...EMPTY_PARISH },
 };
+
+export function parishOf(desk: StudentDesk): ParishDesk {
+  return { ...EMPTY_PARISH, ...desk.parish };
+}
+
+export function withParish(desk: StudentDesk, parish: ParishDesk): StudentDesk {
+  return { ...desk, parish };
+}
 
 function nextDay(key: string) {
   const [y, m, d] = key.split("-").map(Number);

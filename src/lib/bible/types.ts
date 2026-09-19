@@ -135,6 +135,8 @@ export type HonourRow = {
   submittedAt: string;
 };
 
+import type { ParishDesk } from "@/lib/parish/content";
+
 export type StudentDesk = {
   bookmarks: Bookmark[];
   notebook: NotebookItem[];
@@ -144,6 +146,7 @@ export type StudentDesk = {
   knownVerses: string[];
   lastVisitDate: string | null;
   streak: number;
+  parish?: ParishDesk;
 };
 
 export type RevisionCard = {

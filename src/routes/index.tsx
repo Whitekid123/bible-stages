@@ -8,6 +8,7 @@ import { Mark } from "@/components/mark";
 import { LiveLine } from "@/components/live-line";
 import { NaveMotif } from "@/components/nave-motif";
 import { InstallApp } from "@/components/install-app";
+import { ApkDownload } from "@/components/apk-download";
 import { useAppStore } from "@/lib/app-store";
 import { STAGES } from "@/lib/bible/stages";
 import { verseOfTheDay } from "@/lib/bible/verses";
@@ -165,6 +166,7 @@ function LoginPage() {
               <p className="mt-1">Change these later at the teacher desk.</p>
             </div>
           </div>
+          <ApkDownload />
           <InstallApp />
         </div>
       </section>

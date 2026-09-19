@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { ArrowRight, BookOpen, Layers, Lock } from "lucide-react";
+import { ArrowRight, BookOpen, Church, Layers, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LiveLine } from "@/components/live-line";
@@ -82,14 +82,27 @@ function HallPage() {
         </aside>
       ) : null}
 
-      <aside className="mt-6 rounded-xl bg-bg-elevated p-5 shadow-lift">
-        <p className="text-xs font-medium tracking-[0.14em] text-muted uppercase">How this exam works</p>
-        <ul className="mt-3 space-y-2 text-sm text-muted">
-          <li>Every student uses their own phone, with internet on.</li>
-          <li>The teacher sees who is writing, who left the app, and who has handed in.</li>
-          <li>Your answers are stored in the class hall, not only on this phone.</li>
-          <li>Flag a hard question and jump back before you hand in.</li>
-        </ul>
+      <aside className="mt-6 rounded-xl bg-accent p-5 text-accent-fg shadow-lift">
+        <p className="text-xs font-medium tracking-[0.14em] uppercase text-accent-fg/70">Kids court</p>
+        <div className="mt-2 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="font-display text-3xl tracking-tight">Parish play</p>
+            <p className="mt-1 max-w-lg text-sm text-accent-fg/80">
+              Bible stories, who-am-I, matching signs, verse race, Sunday trail, hymns, and a
+              prayer lamp. After the paper — stay in the nave.
+            </p>
+          </div>
+          <Button
+            asChild
+            className="bg-accent-fg text-accent hover:bg-accent-fg/90"
+          >
+            <Link to="/parish">
+              <Church className="size-4" />
+              Open parish
+              <ArrowRight className="size-4" />
+            </Link>
+          </Button>
+        </div>
       </aside>
 
       <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

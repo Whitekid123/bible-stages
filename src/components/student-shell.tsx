@@ -2,11 +2,11 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import {
   BookOpen,
+  Church,
   ClipboardCheck,
   Layers,
   LayoutGrid,
   LogOut,
-  NotebookPen,
   Trophy,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,10 +16,10 @@ import { cn } from "@/lib/utils";
 
 const LINKS = [
   { to: "/hall", label: "Hall", icon: LayoutGrid },
+  { to: "/parish", label: "Parish", icon: Church },
   { to: "/cards", label: "Cards", icon: Layers },
   { to: "/verse", label: "Verse", icon: BookOpen },
-  { to: "/notebook", label: "Notes", icon: NotebookPen },
-  { to: "/progress", label: "Progress", icon: ClipboardCheck },
+  { to: "/progress", label: "Me", icon: ClipboardCheck },
   { to: "/board", label: "Board", icon: Trophy },
 ] as const;
 
