@@ -1,5 +1,9 @@
 # Bible Stages
 
+**Android app:** after GitHub finishes the build, download `BibleStages.apk` from [Releases](https://github.com/Whitekid123/bible-stages/releases). Install that file on the phone. It is the app.
+
+---
+
 A **phone app** for Sunday school and church Bible exams — not a website you browse in a tab.
 
 Students install it on the home screen. Lecturers write questions in the teacher desk. The question pack downloads onto each phone at login, even if they sit later. Papers start and submit so the teacher can mark from another device.

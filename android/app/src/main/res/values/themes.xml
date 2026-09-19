@@ -1,0 +1,9 @@
+<resources>
+    <style name="Theme.BibleStages" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:statusBarColor">#243F3C</item>
+        <item name="android:navigationBarColor">#243F3C</item>
+        <item name="android:windowBackground">#243F3C</item>
+        <item name="colorPrimary">#243F3C</item>
+        <item name="colorAccent">#F3EFE4</item>
+    </style>
+</resources>
