@@ -12,6 +12,7 @@ import android.webkit.WebViewClient;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
+  private static final String CLASS_HALL = "https://bible-stages-wdes.vercel.app/";
   private WebView web;
   private AssetServer server;
 
@@ -25,7 +26,7 @@ public class MainActivity extends Activity {
     try {
       server = new AssetServer(this);
       server.start();
-      web.loadUrl(server.origin() + "/");
+      web.loadUrl(CLASS_HALL);
     } catch (Exception e) {
       Toast.makeText(this, "Bible Stages could not start on this phone.", Toast.LENGTH_LONG).show();
     }
@@ -49,6 +50,13 @@ public class MainActivity extends Activity {
           @Override
           public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
             return false;
+          }
+
+          @Override
+          public void onReceivedError(WebView view, WebResourceRequest request, android.webkit.WebResourceError error) {
+            if (request.isForMainFrame() && server != null) {
+              view.loadUrl(server.origin() + "/");
+            }
           }
         });
   }

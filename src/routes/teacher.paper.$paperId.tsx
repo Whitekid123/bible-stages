@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect } from "react";
-import { ArrowLeft } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowLeft, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAppStore } from "@/lib/app-store";
@@ -21,6 +21,8 @@ function PaperPage() {
   const loadPaper = useAppStore((s) => s.loadPaper);
   const markBlank = useAppStore((s) => s.markBlank);
   const setTeacherNotes = useAppStore((s) => s.setTeacherNotes);
+  const extendTime = useAppStore((s) => s.extendTime);
+  const [extending, setExtending] = useState(false);
 
   useEffect(() => {
     if (!paper) void loadPaper(paperId);
@@ -63,10 +65,26 @@ function PaperPage() {
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <Badge variant={integrity.tone}>{integrity.label}</Badge>
             {paper.timeUp ? <Badge variant="warn">Time ended</Badge> : null}
+            {paper.extraSec ? <Badge variant="ok">+{Math.round(paper.extraSec / 60)} min</Badge> : null}
             <span className="text-sm tabular-nums">
               {score.correct}/{score.total} · {score.percent}%
             </span>
           </div>
+          {!paper.submittedAt ? (
+            <Button
+              className="mt-4"
+              variant="outline"
+              disabled={extending}
+              onClick={async () => {
+                setExtending(true);
+                await extendTime(paper.id, 300);
+                setExtending(false);
+              }}
+            >
+              <Clock className="size-4" />
+              {extending ? "Adding time…" : "Give 5 more minutes"}
+            </Button>
+          ) : null}
           <p className="mt-2 text-sm text-muted">
             Objective {score.objectiveCorrect}/{score.objectiveTotal}
             {" · "}

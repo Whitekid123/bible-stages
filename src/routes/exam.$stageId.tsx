@@ -1,14 +1,15 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AlertTriangle, ChevronLeft, ChevronRight, Clock, Send, WifiOff } from "lucide-react";
+import { AlertTriangle, ChevronLeft, ChevronRight, Clock, Flag, Send, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LiveLine } from "@/components/live-line";
 import { SpeakButton } from "@/components/speak-button";
+import { toast } from "sonner";
 import { useAppStore } from "@/lib/app-store";
 import { examMinutes, examQuestionCount, isStageId, stageById } from "@/lib/bible/stages";
 import { resolveQuestion } from "@/lib/bible/pack";
-import { formatClock } from "@/lib/utils";
+import { formatClock, hashString, seededRng, shuffle } from "@/lib/utils";
 import type { Paper, Question } from "@/lib/bible/types";
 
 export const Route = createFileRoute("/exam/$stageId")({ component: ExamPage });
@@ -31,6 +32,8 @@ function ExamPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [agreed, setAgreed] = useState(false);
+  const refreshMyPapers = useAppStore((s) => s.refreshMyPapers);
 
   const stage = isStageId(stageId) ? stageById(stageId) : undefined;
   const paper = draft && stage && draft.stageId === stage.id && !draft.submittedAt ? draft : null;
@@ -67,11 +70,13 @@ function ExamPage() {
     };
     document.addEventListener("visibilitychange", onVis);
     const tick = window.setInterval(() => void flushProgress(paper.id), 5000);
+    const sync = window.setInterval(() => void refreshMyPapers(), 12000);
     return () => {
       document.removeEventListener("visibilitychange", onVis);
       window.clearInterval(tick);
+      window.clearInterval(sync);
     };
-  }, [paper, flushProgress]);
+  }, [paper, flushProgress, refreshMyPapers]);
 
   if (!session || session.role !== "student" || !stage) return null;
 
@@ -112,16 +117,27 @@ function ExamPage() {
             <Clock className="mt-0.5 size-4 shrink-0 text-muted" />
             {sitting.objective} objective and {sitting.blank} fill-in blanks · {minutes} minutes
           </li>
-          <li>Leaving this app or switching away is recorded on the teacher’s desk.</li>
-          <li>Questions were packed onto this device when you entered. Answers save to the hall when connected.</li>
-          <li>Handing in needs a connection. If the line drops, we keep trying until the teacher has it.</li>
+          <li>Stay on this app until you hand in. Leaving is recorded on the teacher’s desk.</li>
+          <li>Each student has their own phone. Answers save to the class hall while internet is on.</li>
+          <li>You may flag a question and come back to it before you hand in.</li>
         </ul>
+        <label className="mt-5 flex items-start gap-3 rounded-xl border border-border bg-bg-elevated p-4 text-sm">
+          <input
+            type="checkbox"
+            className="mt-1 size-4 accent-current"
+            checked={agreed}
+            onChange={(e) => setAgreed(e.target.checked)}
+          />
+          <span>
+            I will not leave the app, switch away, or share answers. This sitting is my own work.
+          </span>
+        </label>
         <div className="mt-4">
           <LiveLine />
         </div>
         {error ? <p className="mt-4 text-sm text-danger">{error}</p> : null}
         <div className="mt-8 flex flex-col gap-2 sm:flex-row">
-          <Button size="lg" onClick={() => void begin()} disabled={busy}>
+          <Button size="lg" onClick={() => void begin()} disabled={busy || !agreed}>
             {busy ? "Opening your paper…" : "Start the exam"}
           </Button>
           <Button size="lg" variant="outline" asChild>
@@ -186,12 +202,37 @@ function ExamSitting({
   const current = questions[index];
   const remaining = useCountdown(paper, onSubmit);
   const online = useAppStore((s) => s.online);
+  const toggleFlag = useAppStore((s) => s.toggleFlag);
+  const warned = useRef<Set<number>>(new Set());
   const answered = questions.filter((q) => paper.answers[q.id]?.trim()).length;
   const objectiveCount = questions.filter((q) => q.section === "objective").length;
   const inBlanks = current?.section === "blank";
   const localIndex = inBlanks ? index - objectiveCount + 1 : index + 1;
   const sectionTotal = inBlanks ? questions.length - objectiveCount : objectiveCount;
   const young = paper.stageId === "little" || paper.stageId === "growing";
+  const flagged = paper.flagged ?? [];
+  const isFlagged = flagged.includes(current?.id ?? "");
+  const shownOptions = useMemo(() => {
+    if (!current?.options?.length) return [];
+    return shuffle(current.options, seededRng(hashString(`${paper.id}:${current.id}`)));
+  }, [current, paper.id]);
+
+  useEffect(() => {
+    const marks = [600, 300, 60];
+    for (const mark of marks) {
+      if (remaining <= mark && remaining > mark - 2 && !warned.current.has(mark)) {
+        warned.current.add(mark);
+        toast.warning(
+          mark === 60 ? "One minute left." : `${Math.round(mark / 60)} minutes left.`,
+        );
+        try {
+          navigator.vibrate?.(200);
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+  }, [remaining]);
 
   if (!current) {
     return (
@@ -246,12 +287,23 @@ function ExamSitting({
           >
             {current.prompt}
           </h1>
-          <SpeakButton text={current.prompt} label={young ? "Hear this" : "Read aloud"} />
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant={isFlagged ? "default" : "outline"}
+              size="sm"
+              onClick={() => toggleFlag(paper.id, current.id)}
+            >
+              <Flag className="size-4" />
+              {isFlagged ? "Flagged" : "Flag"}
+            </Button>
+            <SpeakButton text={current.prompt} label={young ? "Hear this" : "Read aloud"} />
+          </div>
         </div>
 
         {current.section === "objective" || young ? (
           <div className="mt-6 grid gap-2">
-            {current.options.map((option, i) => {
+            {shownOptions.map((option, i) => {
               const selected = paper.answers[current.id] === option;
               const letter = String.fromCharCode(65 + i);
               return (
@@ -316,6 +368,22 @@ function ExamSitting({
             </Button>
           )}
         </div>
+        {answered < questions.length ? (
+          <Button
+            variant="outline"
+            className="mt-3"
+            disabled={paper.pendingSubmit}
+            onClick={() => {
+              const nextEmpty = questions.findIndex(
+                (q, i) => i > index && !paper.answers[q.id]?.trim(),
+              );
+              const firstEmpty = questions.findIndex((q) => !paper.answers[q.id]?.trim());
+              setIndex(nextEmpty >= 0 ? nextEmpty : Math.max(0, firstEmpty));
+            }}
+          >
+            Jump to unanswered
+          </Button>
+        ) : null}
 
         <div className="mt-8 flex flex-wrap gap-1.5">
           {questions.map((q, i) => {
@@ -328,9 +396,11 @@ function ExamSitting({
                 className={`size-8 rounded-sm text-xs tabular-nums ${
                   i === index
                     ? "bg-accent text-accent-fg"
-                    : filled
-                      ? "bg-ok/15 text-ok"
-                      : "bg-bg-subtle text-muted"
+                    : flagged.includes(q.id)
+                      ? "bg-warn/20 text-warn"
+                      : filled
+                        ? "bg-ok/15 text-ok"
+                        : "bg-bg-subtle text-muted"
                 }`}
               >
                 {i + 1}
@@ -340,6 +410,7 @@ function ExamSitting({
         </div>
         <p className="mt-3 text-sm text-muted">
           Answered {answered} of {questions.length}
+          {flagged.length ? ` · ${flagged.length} flagged` : ""}
           {paper.tabLeaves > 0 ? ` · Tab leaves recorded: ${paper.tabLeaves}` : null}
         </p>
         {submitError ? <p className="mt-2 text-sm text-danger">{submitError}</p> : null}

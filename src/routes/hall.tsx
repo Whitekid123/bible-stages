@@ -66,6 +66,32 @@ function HallPage() {
         <VerseRibbon />
       </div>
 
+      {draft && !draft.submittedAt ? (
+        <aside className="mt-6 rounded-xl border border-accent/30 bg-bg-elevated p-4 shadow-lift">
+          <p className="text-xs font-medium tracking-[0.14em] text-muted uppercase">Unfinished paper</p>
+          <p className="mt-1 font-medium">You have a sitting still open.</p>
+          <p className="mt-1 text-sm text-muted">
+            Return now. Time is still running on the teacher’s desk.
+          </p>
+          <Button className="mt-3" asChild>
+            <Link to="/exam/$stageId" params={{ stageId: draft.stageId }}>
+              Continue exam
+              <ArrowRight className="size-4" />
+            </Link>
+          </Button>
+        </aside>
+      ) : null}
+
+      <aside className="mt-6 rounded-xl bg-bg-elevated p-5 shadow-lift">
+        <p className="text-xs font-medium tracking-[0.14em] text-muted uppercase">How this exam works</p>
+        <ul className="mt-3 space-y-2 text-sm text-muted">
+          <li>Every student uses their own phone, with internet on.</li>
+          <li>The teacher sees who is writing, who left the app, and who has handed in.</li>
+          <li>Your answers are stored in the class hall, not only on this phone.</li>
+          <li>Flag a hard question and jump back before you hand in.</li>
+        </ul>
+      </aside>
+
       <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <MiniStat label="Day streak" value={String(desk.streak || 1)} />
         <MiniStat label="Papers in" value={String(handed.length)} />

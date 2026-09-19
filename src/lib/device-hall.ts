@@ -280,7 +280,8 @@ export async function startScript({
     tabLeaves: 0,
     appLeaves: 0,
     hidden: false,
-    lastSeen: startedAt,
+    extraSec: 0,
+    flagged: [],
     startedAt,
     submittedAt: null,
     timeUp: false,
@@ -361,6 +362,23 @@ export async function getScript({ data }: Fn<{ password: string; paperId: string
   const paper = state.papers.find((item) => item.id === data.paperId);
   if (!paper) return fail("That script is not in the hall.");
   return { ok: true as const, paper };
+}
+
+export async function extendScript({
+  data,
+}: Fn<{ password: string; paperId: string; extraSec: number }>) {
+  const state = readHall();
+  if (!requireTeacher(data.password, state)) return fail("That teacher password is not right.");
+  const paper = state.papers.find((item) => item.id === data.paperId);
+  if (!paper || paper.submittedAt) return fail("That sitting is not open.");
+  const next = {
+    ...paper,
+    extraSec: (paper.extraSec ?? 0) + data.extraSec,
+    durationSec: paper.durationSec + data.extraSec,
+  };
+  state.papers = state.papers.map((item) => (item.id === data.paperId ? next : item));
+  writeHall(state);
+  return { ok: true as const, paper: next };
 }
 
 export async function listMyScripts({

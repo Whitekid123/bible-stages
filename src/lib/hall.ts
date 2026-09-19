@@ -344,6 +344,36 @@ export const getScript = createServerFn({ method: "POST" })
     };
   });
 
+export const extendScript = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      password: z.string().min(1),
+      paperId: z.string().min(1),
+      extraSec: z.number().int().min(60).max(3600),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const sql = await ensureHall();
+    const row = await settings(sql);
+    if (!row || !hashesMatch(data.password, row.teacher_password_hash)) {
+      return fail("That teacher password is not right.");
+    }
+    await sql`
+      update scripts
+      set extra_sec = extra_sec + ${data.extraSec},
+          duration_sec = duration_sec + ${data.extraSec}
+      where id = ${data.paperId} and submitted_at is null
+    `;
+    const custom = await loadCustomQuestions(sql, false);
+    const rows = await sql<ScriptRow>`select * from scripts where id = ${data.paperId} limit 1`;
+    if (!rows[0]) return fail("That script is not in the hall.");
+    return {
+      ok: true as const,
+      paper: hydrateMissingQuestions(toPaper(rows[0], { reveal: true, custom }), custom),
+    };
+  });
+
+
 export const listMyScripts = createServerFn({ method: "POST" })
   .validator(
     z.object({

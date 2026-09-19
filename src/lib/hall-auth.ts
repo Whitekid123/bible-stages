@@ -13,6 +13,7 @@ export type ScriptRow = {
   app_leaves?: number | string | null;
   last_seen?: string | null;
   hidden?: number | string | null;
+  extra_sec?: number | string | null;
   started_at: string;
   submitted_at: string | null;
   time_up: number;
@@ -137,6 +138,7 @@ export function toPaper(row: ScriptRow, opts?: { reveal?: boolean; custom?: Ques
     appLeaves: Number(row.app_leaves) || 0,
     hidden: Number(row.hidden) === 1,
     lastSeen: row.last_seen || undefined,
+    extraSec: Number(row.extra_sec) || 0,
     startedAt: row.started_at,
     submittedAt: row.submitted_at,
     timeUp: Number(row.time_up) === 1,

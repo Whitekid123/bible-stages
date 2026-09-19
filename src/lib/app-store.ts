@@ -11,6 +11,7 @@ import {
   noteScript,
   pingHall,
   beatHall,
+  extendScript,
   saveScriptProgress,
   startScript,
   submitScript,
@@ -96,6 +97,8 @@ type AppState = {
   recordTabLeave: (paperId: string) => void;
   recordAppLeave: () => void;
   beat: (hidden: boolean, appLeave?: boolean) => Promise<void>;
+  toggleFlag: (paperId: string, questionId: string) => void;
+  extendTime: (paperId: string, extraSec?: number) => Promise<string | null>;
   flushProgress: (paperId: string) => Promise<void>;
   submitPaper: (paperId: string, timeUp?: boolean) => Promise<string | null>;
   setTeacherNotes: (paperId: string, notes: string) => void;
@@ -325,6 +328,13 @@ export const useAppStore = create<AppState>()(
           return res.error;
         }
         set({ myPapers: res.papers, hallMeta: res.meta ?? get().hallMeta, online: true });
+        const open = res.papers.find((p) => p.id === get().draft?.id && !p.submittedAt);
+        if (open && get().draft) {
+          const draft = get().draft!;
+          if (open.durationSec !== draft.durationSec || (open.extraSec ?? 0) !== (draft.extraSec ?? 0)) {
+            set({ draft: { ...draft, durationSec: open.durationSec, extraSec: open.extraSec ?? 0 } });
+          }
+        }
         return null;
       },
       startPaper: async (stageId) => {
@@ -417,6 +427,33 @@ export const useAppStore = create<AppState>()(
           return;
         }
         set({ online: true });
+      },
+      toggleFlag: (paperId, questionId) => {
+        const patch = (p: Paper) => {
+          if (p.id !== paperId) return p;
+          const flagged = p.flagged ?? [];
+          const next = flagged.includes(questionId)
+            ? flagged.filter((id) => id !== questionId)
+            : [...flagged, questionId];
+          return { ...p, flagged: next };
+        };
+        set({
+          draft: get().draft ? patch(get().draft!) : get().draft,
+          papers: get().papers.map(patch),
+        });
+      },
+      extendTime: async (paperId, extraSec = 300) => {
+        const session = get().session;
+        if (session?.role !== "teacher") return "Teacher only.";
+        const res = await guarded(() =>
+          extendScript({ data: { password: session.password, paperId, extraSec } }),
+        );
+        if (!res.ok) {
+          set(markOnline(res.error));
+          return res.error;
+        }
+        set({ papers: upsertPaper(get().papers, res.paper), online: true });
+        return null;
       },
       flushProgress: async (paperId) => {
         const session = get().session;

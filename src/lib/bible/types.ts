@@ -76,6 +76,8 @@ export type Paper = {
   scoreCache?: ScoreSummary;
   /** Local only: hand-in is queued until the hall confirms receipt. */
   pendingSubmit?: boolean;
+  flagged?: string[];
+  extraSec?: number;
 };
 
 export type SeatWatch = {
