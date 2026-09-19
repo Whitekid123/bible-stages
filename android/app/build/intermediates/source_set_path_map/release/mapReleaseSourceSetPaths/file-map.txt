@@ -1,0 +1,7 @@
+com.biblestages.app-pngs-0 /workspace/android/app/build/generated/res/pngs/release
+com.biblestages.app-resValues-1 /workspace/android/app/build/generated/res/resValues/release
+com.biblestages.app-packageReleaseResources-2 /workspace/android/app/build/intermediates/incremental/release/packageReleaseResources/merged.dir
+com.biblestages.app-packageReleaseResources-3 /workspace/android/app/build/intermediates/incremental/release/packageReleaseResources/stripped.dir
+com.biblestages.app-release-4 /workspace/android/app/build/intermediates/merged_res/release/mergeReleaseResources
+com.biblestages.app-main-5 /workspace/android/app/src/main/res
+com.biblestages.app-release-6 /workspace/android/app/src/release/res

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#243F3C"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="28dp">
+
+    <ImageView
+        android:layout_width="84dp"
+        android:layout_height="84dp"
+        android:contentDescription="@string/app_name"
+        android:src="@mipmap/ic_launcher" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:fontFamily="serif"
+        android:text="Bible Stages"
+        android:textColor="#F3EFE4"
+        android:textSize="32sp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="Classroom exam app. Paste the class hall address from Vercel once. After that, this icon is the app."
+        android:textColor="#C9C3B4"
+        android:textSize="15sp" />
+
+    <EditText
+        android:id="@+id/hallUrl"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="22dp"
+        android:background="#F7F1E4"
+        android:hint="https://your-class.vercel.app"
+        android:inputType="textUri"
+        android:padding="14dp"
+        android:textColor="#1C1915"
+        android:textColorHint="#8A8173"
+        android:textSize="15sp" />
+
+    <Button
+        android:id="@+id/openHall"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="#F3EFE4"
+        android:text="Open the hall"
+        android:textAllCaps="false"
+        android:textColor="#243F3C" />
+</LinearLayout>

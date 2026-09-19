@@ -1,0 +1,9 @@
+com.biblestages.app:mipmap/ic_launcher = 0x7f030000
+com.biblestages.app:id/setupRoot = 0x7f010003
+com.biblestages.app:style/Theme.BibleStages = 0x7f050000
+com.biblestages.app:id/hallView = 0x7f010001
+com.biblestages.app:layout/activity_main = 0x7f020000
+com.biblestages.app:id/openHall = 0x7f010002
+com.biblestages.app:string/app_name = 0x7f040000
+com.biblestages.app:layout/activity_setup = 0x7f020001
+com.biblestages.app:id/hallUrl = 0x7f010000

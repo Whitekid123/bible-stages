@@ -1,0 +1,11 @@
+R_DEF: Internal format may change without notice
+local
+id hallUrl
+id hallView
+id openHall
+id setupRoot
+layout activity_main
+layout activity_setup
+mipmap ic_launcher
+string app_name
+style Theme.BibleStages

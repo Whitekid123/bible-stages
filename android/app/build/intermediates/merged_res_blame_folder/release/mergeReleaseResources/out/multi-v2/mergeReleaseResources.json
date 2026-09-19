@@ -1,0 +1,45 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.biblestages.app-release-4:/values_values.arsc.flat",
+            "map": [
+                {
+                    "source": "/workspace/android/app/src/main/res/values/themes.xml",
+                    "from": {
+                        "startLines": "1",
+                        "startColumns": "4",
+                        "startOffsets": "16",
+                        "endLines": "7",
+                        "endColumns": "12",
+                        "endOffsets": "407"
+                    },
+                    "to": {
+                        "startLines": "3",
+                        "startColumns": "4",
+                        "startOffsets": "105",
+                        "endLines": "9",
+                        "endColumns": "12",
+                        "endOffsets": "496"
+                    }
+                },
+                {
+                    "source": "/workspace/android/app/src/main/res/values/strings.xml",
+                    "from": {
+                        "startLines": "1",
+                        "startColumns": "4",
+                        "startOffsets": "16",
+                        "endColumns": "49",
+                        "endOffsets": "61"
+                    },
+                    "to": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "49",
+                        "endOffsets": "100"
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,53 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.biblestages.app"
+4    android:versionCode="1"
+5    android:versionName="1.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="24"
+9        android:targetSdkVersion="35" />
+10
+11    <uses-permission android:name="android.permission.INTERNET" />
+11-->/workspace/android/app/src/main/AndroidManifest.xml:4:5-67
+11-->/workspace/android/app/src/main/AndroidManifest.xml:4:22-64
+12
+13    <application
+13-->/workspace/android/app/src/main/AndroidManifest.xml:6:5-23:19
+14        android:allowBackup="true"
+14-->/workspace/android/app/src/main/AndroidManifest.xml:7:9-35
+15        android:extractNativeLibs="false"
+16        android:icon="@mipmap/ic_launcher"
+16-->/workspace/android/app/src/main/AndroidManifest.xml:8:9-43
+17        android:label="@string/app_name"
+17-->/workspace/android/app/src/main/AndroidManifest.xml:9:9-41
+18        android:supportsRtl="true"
+18-->/workspace/android/app/src/main/AndroidManifest.xml:10:9-35
+19        android:theme="@style/Theme.BibleStages"
+19-->/workspace/android/app/src/main/AndroidManifest.xml:11:9-49
+20        android:usesCleartextTraffic="false" >
+20-->/workspace/android/app/src/main/AndroidManifest.xml:12:9-45
+21        <activity
+21-->/workspace/android/app/src/main/AndroidManifest.xml:13:9-22:20
+22            android:name="com.biblestages.app.MainActivity"
+22-->/workspace/android/app/src/main/AndroidManifest.xml:14:13-41
+23            android:configChanges="orientation|screenSize|keyboardHidden"
+23-->/workspace/android/app/src/main/AndroidManifest.xml:15:13-74
+24            android:exported="true"
+24-->/workspace/android/app/src/main/AndroidManifest.xml:16:13-36
+25            android:windowSoftInputMode="adjustResize" >
+25-->/workspace/android/app/src/main/AndroidManifest.xml:17:13-55
+26            <intent-filter>
+26-->/workspace/android/app/src/main/AndroidManifest.xml:18:13-21:29
+27                <action android:name="android.intent.action.MAIN" />
+27-->/workspace/android/app/src/main/AndroidManifest.xml:19:17-69
+27-->/workspace/android/app/src/main/AndroidManifest.xml:19:25-66
+28
+29                <category android:name="android.intent.category.LAUNCHER" />
+29-->/workspace/android/app/src/main/AndroidManifest.xml:20:17-77
+29-->/workspace/android/app/src/main/AndroidManifest.xml:20:27-74
+30            </intent-filter>
+31        </activity>
+32    </application>
+33
+34</manifest>
