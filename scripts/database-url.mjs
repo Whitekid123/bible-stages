@@ -2,6 +2,8 @@
  * Vercel + Supabase inject POSTGRES_URL, not DATABASE_URL.
  * Accept every common name so the class hall connects after they tap Connect.
  */
+
+/** @param {NodeJS.ProcessEnv | Record<string, string | undefined>} [env] */
 export function resolveDatabaseUrl(env = typeof process !== "undefined" ? process.env : {}) {
   const keys = [
     "DATABASE_URL",
@@ -16,6 +18,7 @@ export function resolveDatabaseUrl(env = typeof process !== "undefined" ? proces
   return undefined;
 }
 
+/** @param {string | undefined} connectionString */
 export function pgSsl(connectionString) {
   if (!connectionString) return undefined;
   if (/supabase\.(co|com)|pooler\.supabase|neon\.tech/i.test(connectionString)) {
