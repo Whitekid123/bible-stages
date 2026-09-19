@@ -7,8 +7,11 @@ export type DbSource = "neon" | "pglite";
 // "unset" — otherwise production would silently run on the PGLite fallback.
 const rawDatabaseUrl =
   typeof process !== "undefined" ? process.env.DATABASE_URL : undefined;
-const databaseUrl =
-  rawDatabaseUrl && rawDatabaseUrl.trim() ? rawDatabaseUrl : undefined;
+const databaseUrl = (() => {
+  const trimmed = rawDatabaseUrl?.trim();
+  if (!trimmed) return undefined;
+  return trimmed.replace(/^['"]|['"]$/g, "").trim() || undefined;
+})();
 
 /**
  * Active backend: real **Neon** when `DATABASE_URL` is set (deployed / configured
@@ -94,6 +97,37 @@ function createNeonSql(): Promise<Sql> {
     types.setTypeParser(OID_DATE, identity);
     types.setTypeParser(OID_INTERVAL, identity);
     const pool = new Pool({ connectionString: databaseUrl });
+    const client = await pool.connect();
+    try {
+      await client.query(
+        "CREATE TABLE IF NOT EXISTS _migrations (name TEXT PRIMARY KEY, applied_at TIMESTAMPTZ NOT NULL DEFAULT now())",
+      );
+      const applied = (
+        await client.query<{ name: string }>("SELECT name FROM _migrations")
+      ).rows.map((row) => row.name);
+      const migrations = import.meta.glob("/migrations/*.sql", {
+        query: "?raw",
+        import: "default",
+        eager: true,
+      }) as Record<string, string>;
+      for (const { name, path } of pendingMigrations(Object.keys(migrations), applied)) {
+        await client.query("BEGIN");
+        try {
+          await client.query(migrations[path]);
+          await client.query("INSERT INTO _migrations (name) VALUES ($1)", [name]);
+          await client.query("COMMIT");
+        } catch (err) {
+          try {
+            await client.query("ROLLBACK");
+          } catch {
+            /* keep original error */
+          }
+          throw err;
+        }
+      }
+    } finally {
+      client.release();
+    }
     return toSql(async <T>(text: string, params: unknown[]) => {
       const res = await pool.query(text, params);
       return res.rows as T[];

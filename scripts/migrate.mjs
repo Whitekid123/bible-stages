@@ -86,5 +86,15 @@ main().catch((err) => {
   for (const key of ["code", "detail", "hint", "position", "where"]) {
     if (err?.[key] != null) console.error(`[migrate]   ${key}: ${err[key]}`);
   }
+  const authFail =
+    err?.code === "28P01" ||
+    err?.code === "28000" ||
+    /password authentication failed/i.test(String(err?.message ?? ""));
+  if (authFail) {
+    console.warn(
+      "[migrate] DATABASE_URL password was rejected. The app will still deploy. Fix DATABASE_URL, redeploy or wait — the hall will finish setup on first visit.",
+    );
+    process.exit(0);
+  }
   process.exit(1);
 });

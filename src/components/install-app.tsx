@@ -1,59 +1,61 @@
 import { useEffect, useState } from "react";
-import { Download, Share, X } from "lucide-react";
+import { Copy, Download, Share, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  isIosDevice,
+  clearDeferredPrompt,
+  copyClassLink,
+  getDeferredPrompt,
+  installKind,
   isStandaloneApp,
   readInstallDismissed,
+  subscribeInstallPrompt,
   writeInstallDismissed,
+  type InstallKind,
 } from "@/lib/pwa";
-
-type PromptEvent = Event & {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
-};
 
 export function InstallApp({ compact = false }: { compact?: boolean }) {
   const [standalone, setStandalone] = useState(false);
-  const [ios, setIos] = useState(false);
-  const [promptEvent, setPromptEvent] = useState<PromptEvent | null>(null);
+  const [kind, setKind] = useState<InstallKind>("other");
+  const [canPrompt, setCanPrompt] = useState(false);
   const [dismissed, setDismissed] = useState(true);
+  const [copied, setCopied] = useState(false);
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     setStandalone(isStandaloneApp());
-    setIos(isIosDevice());
+    setKind(installKind());
     setDismissed(readInstallDismissed());
-
-    const onPrompt = (event: Event) => {
-      event.preventDefault();
-      setPromptEvent(event as PromptEvent);
-    };
-    window.addEventListener("beforeinstallprompt", onPrompt);
-    const onInstalled = () => {
-      setStandalone(true);
-      setPromptEvent(null);
-    };
-    window.addEventListener("appinstalled", onInstalled);
-    return () => {
-      window.removeEventListener("beforeinstallprompt", onPrompt);
-      window.removeEventListener("appinstalled", onInstalled);
-    };
+    setCanPrompt(Boolean(getDeferredPrompt()));
+    return subscribeInstallPrompt(() => {
+      setCanPrompt(Boolean(getDeferredPrompt()));
+      setStandalone(isStandaloneApp());
+    });
   }, []);
 
   if (standalone) {
     return compact ? null : (
       <p className="rounded-lg border border-ok/30 bg-ok/10 px-4 py-3 text-sm text-ok">
-        Bible Stages is installed on this phone. Open it from the home screen next time.
+        Bible Stages is on this device. Open it from the home screen next time — not from Chrome.
       </p>
     );
   }
 
   async function install() {
+    const promptEvent = getDeferredPrompt();
     if (!promptEvent) return;
+    setBusy(true);
     await promptEvent.prompt();
     const choice = await promptEvent.userChoice;
+    setBusy(false);
     if (choice.outcome === "accepted") setStandalone(true);
-    setPromptEvent(null);
+    clearDeferredPrompt();
+    setCanPrompt(false);
+  }
+
+  async function copy() {
+    await copyClassLink();
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 2000);
   }
 
   function hide() {
@@ -61,16 +63,16 @@ export function InstallApp({ compact = false }: { compact?: boolean }) {
     setDismissed(true);
   }
 
-  if (compact && dismissed && !promptEvent) return null;
+  if (compact && dismissed && !canPrompt) return null;
 
   return (
     <div className="rounded-xl border border-border bg-bg-elevated p-4 shadow-lift">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="font-display text-lg leading-tight">Install the app</p>
+          <p className="font-display text-lg leading-tight">Put this on the home screen</p>
           <p className="mt-1 text-sm text-muted">
-            Put Bible Stages on the home screen. It opens like a normal app, keeps the question pack
-            on this phone, and does not need the browser.
+            There is no Play Store file. Chrome does not download an app from a blue link. You
+            install from the Chrome menu, or from the button below when Chrome offers it.
           </p>
         </div>
         {compact ? (
@@ -85,26 +87,65 @@ export function InstallApp({ compact = false }: { compact?: boolean }) {
         ) : null}
       </div>
 
-      {promptEvent ? (
-        <Button className="mt-4 w-full" onClick={() => void install()}>
+      {canPrompt ? (
+        <Button className="mt-4 w-full" size="lg" disabled={busy} onClick={() => void install()}>
           <Download className="size-4" />
-          Add to this phone
+          {busy ? "Waiting for Chrome…" : "Install Bible Stages"}
         </Button>
-      ) : ios ? (
-        <ol className="mt-3 space-y-2 text-sm text-fg">
-          <li className="flex gap-2">
-            <Share className="mt-0.5 size-4 shrink-0 text-accent" />
-            Tap the Share button in Safari
-          </li>
-          <li>Scroll and tap Add to Home Screen</li>
-          <li>Open Bible Stages from the new icon</li>
-        </ol>
-      ) : (
-        <p className="mt-3 text-sm text-muted">
-          On Android Chrome: menu (⋮) → <span className="font-medium text-fg">Install app</span> or
-          Add to Home screen.
-        </p>
-      )}
+      ) : null}
+
+      <ol className="mt-4 space-y-2 text-sm text-fg">
+        {kind === "ios-chrome" ? (
+          <>
+            <li className="font-medium text-warn">
+              Chrome on iPhone cannot install apps to the home screen.
+            </li>
+            <li>Copy the class link with the button below.</li>
+            <li>Open <span className="font-medium">Safari</span> (the compass icon).</li>
+            <li>Paste the link, then Share → Add to Home Screen.</li>
+          </>
+        ) : kind === "ios-safari" ? (
+          <>
+            <li className="flex gap-2">
+              <Share className="mt-0.5 size-4 shrink-0 text-accent" />
+              Tap the Share button (square with an arrow)
+            </li>
+            <li>Scroll and tap <span className="font-medium">Add to Home Screen</span></li>
+            <li>Open the new Bible Stages icon</li>
+          </>
+        ) : kind === "android-chrome" ? (
+          <>
+            <li>Tap the three dots <span className="font-medium">⋮</span> at the top right of Chrome</li>
+            <li>
+              Tap <span className="font-medium">Install app</span> or{" "}
+              <span className="font-medium">Add to Home screen</span>
+            </li>
+            <li>Confirm. Then open Bible Stages from the home screen</li>
+          </>
+        ) : kind === "desktop-chrome" ? (
+          <>
+            <li>
+              Look in the Chrome address bar for a computer icon, or open the three dots{" "}
+              <span className="font-medium">⋮</span>
+            </li>
+            <li>
+              Tap <span className="font-medium">Cast, save and share</span> →{" "}
+              <span className="font-medium">Install page as app</span>
+            </li>
+            <li>That is the download. Chrome will not save an .apk or .exe file.</li>
+          </>
+        ) : (
+          <>
+            <li>On Android: Chrome menu ⋮ → Install app</li>
+            <li>On iPhone: open this page in Safari → Share → Add to Home Screen</li>
+          </>
+        )}
+      </ol>
+
+      <Button variant="outline" className="mt-4 w-full" onClick={() => void copy()}>
+        <Copy className="size-4" />
+        {copied ? "Copied" : "Copy class link"}
+      </Button>
     </div>
   );
 }
